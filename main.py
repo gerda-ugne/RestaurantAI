@@ -1,5 +1,6 @@
-from aima.search import *
 import json
+
+from aima3.search import Problem, Node
 
 
 class ClosestRestaurant(Problem):
@@ -41,7 +42,7 @@ class Solution:
     if __name__ == '__main__':
 
         restaurant_list = list()
-        dataFile = open('file1.json')
+        dataFile = open('dataset/file1.json')
 
         data = json.load(dataFile)
         for restaurant in data:
