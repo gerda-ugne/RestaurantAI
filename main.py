@@ -1,6 +1,7 @@
 import json
+from abc import ABC
 
-from aima3.search import Problem, Node
+from aima3.search import Problem, Node, SimpleProblemSolvingAgentProgram
 from flask import jsonify
 
 
@@ -20,13 +21,16 @@ class ClosestRestaurant(Problem):
         After scanning: return locations available to travel to
         After travelling: return new coordinates for the agent
         """
-
-        if (action == "travel"):
+        available_actions = []
+        if action == "travel":
             return
-        elif (action == "scan"):
+        elif action == "scan":
             return
 
-        raise NotImplementedError
+        return available_actions
+
+    def value(self, state):
+        pass
 
 
 class RestaurantNode(Node):
@@ -47,22 +51,42 @@ class RestaurantNode(Node):
         print()
 
 
+class Agent(SimpleProblemSolvingAgentProgram):
+
+    def __init__(self, location, initial_state=None):
+        super(Agent, self).__init__(initial_state=None)
+        self.location = location
+
+    def update_state(self, percept):
+        pass
+
+    def formulate_goal(self, state):
+        pass
+
+    def formulate_problem(self, state, goal):
+        pass
+
+    def search(self, problem):
+        pass
+
+
 class Solution:
 
     def __init__(self):
         pass
 
-    def parseJSON(self, filename):
+    @staticmethod
+    def parseJSON(filename):
         data_file = open(filename)
 
         data = json.load(data_file)
         data_file.close()
 
-        expectedN = data[0]['results_found']
+        expected_n = data[0]['results_found']
 
         n = 0
         restaurant_list = []
-        for n in range(expectedN):
+        for n in range(expected_n):
 
             if 'restaurants' not in data[n]: break
             for i in data[n]['restaurants']:
@@ -84,7 +108,9 @@ class Solution:
 
 
 if __name__ == '__main__':
+    solution = Solution()
+    filename = "dataset/file1.json"
+    restaurant_list = solution.parseJSON(filename)
 
-        solution = Solution()
-        filename = "dataset/file1.json"
-        restaurant_list = solution.parseJSON(filename)
+    agent = Agent("Italian")
+
