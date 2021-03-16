@@ -1,4 +1,5 @@
-from aima.search import Problem, Node
+from aima.search import *
+import json
 
 
 class ClosestRestaurant(Problem):
@@ -17,12 +18,37 @@ class ClosestRestaurant(Problem):
         After scanning: return locations available to travel to
         After travelling: return new coordinates for the agent
         """
+
+        if (action == "travel"):
+            return
+        elif (action == "scan"):
+            return
+
         raise NotImplementedError
 
 
 class RestaurantNode(Node):
+    """Data types:
+        - Location is a list containing latitude and longitude"""
 
     def __init__(self, state, id, location, parent=None, action=None, path_cost=0):
         super(RestaurantNode, self).__init__()
         self.id = id
         self.location = location
+
+
+class Solution:
+    if __name__ == '__main__':
+
+        restaurant_list = list()
+        dataFile = open('file1.json')
+
+        data = json.load(dataFile)
+        for restaurant in data:
+            print(restaurant)
+
+        dataFile.close()
+
+        """ Store the restaurant locations in the following format:
+        "Name"  : "Location[x,y] by using dictionaries """
+        restaurant_locations = dict()
