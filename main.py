@@ -43,8 +43,9 @@ class RestaurantNode(Node):
         print("Name: " + self.name)
         print("States: " + self.state)
         print("ID: " + str(self.id))
-        print("Location:" + self.location[0] + ", " +  self.location[1])
+        print("Location: " + self.location[0] + ", " + self.location[1])
         print()
+
 
 class Solution:
     if __name__ == '__main__':
@@ -55,25 +56,25 @@ class Solution:
         dataFile.close()
 
         filteredData = dict()
-        nRestaurants = data[0]['results_found']
+        expectedN = data[0]['results_found']
 
-        counter = 0
+        n = 0
         restaurant_list = []
-        for i in data[0]['restaurants']:
-            print(i)
-            restaurant_list.append(RestaurantNode(i['restaurant']['cuisines'],
-                                                  i['restaurant']['name'],
-                                                  i['restaurant']['R']['res_id'],
-                                                  [i['restaurant']['location']['latitude'],
-                                                   i['restaurant']['location']['longitude']]
-                                                  ))
-            counter += 1
+        for n in range(expectedN):
 
-        print(nRestaurants)
-        print(counter)
+            if 'restaurants' not in data[n]: break
+            for i in data[n]['restaurants']:
+                restaurant_list.append(RestaurantNode(i['restaurant']['cuisines'],
+                                                      i['restaurant']['name'],
+                                                      i['restaurant']['R']['res_id'],
+                                                      [i['restaurant']['location']['latitude'],
+                                                       i['restaurant']['location']['longitude']]
+                                                      ))
+            n += 1
+
+        print(n)
 
         for restaurant in restaurant_list:
             restaurant.print()
 
         # print(json.dumps(data, indent=4, sort_keys=False))
-
