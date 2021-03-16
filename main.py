@@ -1,7 +1,7 @@
 import json
 
 from aima3.search import Problem, Node
-
+from flask import jsonify
 
 class ClosestRestaurant(Problem):
 
