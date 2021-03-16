@@ -45,10 +45,10 @@ class Solution:
         dataFile = open('dataset/file1.json')
 
         data = json.load(dataFile)
-        for restaurant in data:
-            print(restaurant)
-
         dataFile.close()
+
+        print(json.dumps(data, indent=4, sort_keys=False))
+
 
         """ Store the restaurant locations in the following format:
         "Name"  : "Location[x,y] by using dictionaries """
