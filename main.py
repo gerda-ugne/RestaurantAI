@@ -1,8 +1,5 @@
 import json
-from abc import ABC
-
 from aima3.search import Problem, Node, SimpleProblemSolvingAgentProgram
-from flask import jsonify
 
 
 class ClosestRestaurant(Problem):
