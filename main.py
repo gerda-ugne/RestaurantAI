@@ -48,14 +48,16 @@ class RestaurantNode(Node):
 
 
 class Solution:
-    if __name__ == '__main__':
 
-        dataFile = open('dataset/file1.json')
+    def __init__(self):
+        pass
 
-        data = json.load(dataFile)
-        dataFile.close()
+    def parseJSON(self, filename):
+        data_file = open(filename)
 
-        filteredData = dict()
+        data = json.load(data_file)
+        data_file.close()
+
         expectedN = data[0]['results_found']
 
         n = 0
@@ -77,4 +79,12 @@ class Solution:
         for restaurant in restaurant_list:
             restaurant.print()
 
+        return restaurant_list
         # print(json.dumps(data, indent=4, sort_keys=False))
+
+
+if __name__ == '__main__':
+
+        solution = Solution()
+        filename = "dataset/file1.json"
+        restaurant_list = solution.parseJSON(filename)
