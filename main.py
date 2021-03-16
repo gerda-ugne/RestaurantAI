@@ -1,16 +1,28 @@
-# This is a sample Python script.
-
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+from aima.search import Problem, Node
 
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+class ClosestRestaurant(Problem):
+
+    def actions(self, state):
+        """Return actions in the current restaurant to:
+        - scan the nearby area
+        - travel to another restaurant """
+        raise NotImplementedError
+
+    def result(self, state, action):
+        """Return the state that results from executing the given
+        action in the given state. The action must be one of
+        self.actions(state).
+
+        After scanning: return locations available to travel to
+        After travelling: return new coordinates for the agent
+        """
+        raise NotImplementedError
 
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+class RestaurantNode(Node):
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    def __init__(self, state, id, location, parent=None, action=None, path_cost=0):
+        super(RestaurantNode, self).__init__()
+        self.id = id
+        self.location = location
