@@ -42,7 +42,8 @@ class ClosestRestaurant(Problem):
             a = math.sin(difference_lat / 2) ** 2 + math.cos(lat_initial) * math.cos(lat2) * math.sin(difference_lon / 2) ** 2
 
             c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-            distance = R * c
+            distance = round(R * c , 2)
+
         # End of code extract.
 
             if distance <= 5: # if the distance from initial location is <= 5 km to the current restaurant
