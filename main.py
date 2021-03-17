@@ -9,6 +9,10 @@ class ClosestRestaurant(Problem):
     def __init__(self, list_of_restaurants, initial="Italian", goal="Mexican"):
         super().__init__(initial, goal)
         self.list_of_restaurants = list_of_restaurants
+        if list_of_restaurants is not None:
+            self.agent_location = list_of_restaurants[0].state.location
+        else:
+            self.agent_location = None
 
     def actions(self, state):
 
@@ -31,7 +35,7 @@ class ClosestRestaurant(Problem):
         return available_actions
 
     def scan(self, state):
-        """Input parameter : initial coordinates of a place, a list of locations
+        """Input parameter : state where the action was initiated
             Return : a list of places that are located in the area scanned"""
 
         restaurant_list_within_area = []
@@ -61,9 +65,9 @@ class ClosestRestaurant(Problem):
 
             c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
-            distance = round(R * c , 2)
+            distance = round(R * c, 2)
 
-        # End of code extract.
+            # End of code extract.
 
             if distance <= 5:  # if the distance from initial location is <= 5 km to the current restaurant
                 restaurant_list_within_area.append(i)  # add that restaurant to a list
@@ -71,6 +75,11 @@ class ClosestRestaurant(Problem):
                 print("Distance " + str(distance) + " km")
 
         return restaurant_list_within_area
+
+    """Returns the updated agent's state after travel"""
+    def travel(self, state):
+        self.agent_location = state.location
+        return self.agent_location
 
     def result(self, state, action):
         """Return the state that results from executing the given
@@ -80,9 +89,8 @@ class ClosestRestaurant(Problem):
         After scanning: return locations available to travel to
         After travelling: return new coordinates for the agent
         """
-        available_actions = []
         if action == "travel":
-            return
+            return self.travel(state)
         elif action == "scan":
             return self.scan(state)
 
@@ -90,7 +98,6 @@ class ClosestRestaurant(Problem):
         pass
 
     def goal_test(self, state):
-
         if isinstance(self.goal, list):
             return is_in(state.cuisines, self.goal)
         else:
