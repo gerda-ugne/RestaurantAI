@@ -158,7 +158,4 @@ if __name__ == '__main__':
     restaurant_list = solution.parseJSON(filename)
 
     problem = ClosestRestaurant(restaurant_list)
-    ClosestRestaurant.list_of_restaurants = restaurant_list
-
-    """ Initial location: 28.554281, 77.19447 which is almost the same as for the first restaurant in the list  """
     problem.scan(restaurant_list[0].state)
