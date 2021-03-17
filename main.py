@@ -60,8 +60,10 @@ class ClosestRestaurant(Problem):
                 difference_lon / 2) ** 2
 
             c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-            distance = R * c
-            # End of code extract.
+
+            distance = round(R * c , 2)
+
+        # End of code extract.
 
             if distance <= 5:  # if the distance from initial location is <= 5 km to the current restaurant
                 restaurant_list_within_area.append(i)  # add that restaurant to a list
