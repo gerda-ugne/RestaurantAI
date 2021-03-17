@@ -48,25 +48,6 @@ class RestaurantNode(Node):
         print()
 
 
-class Agent(SimpleProblemSolvingAgentProgram):
-
-    def __init__(self, location, initial_state=None):
-        super(Agent, self).__init__(initial_state=None)
-        self.location = location
-
-    def update_state(self, percept):
-        pass
-
-    def formulate_goal(self, state):
-        pass
-
-    def formulate_problem(self, state, goal):
-        pass
-
-    def search(self, problem):
-        pass
-
-
 class Solution:
 
     def __init__(self):
@@ -109,5 +90,4 @@ if __name__ == '__main__':
     filename = "dataset/file1.json"
     restaurant_list = solution.parseJSON(filename)
 
-    agent = Agent("Italian")
 
