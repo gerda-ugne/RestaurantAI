@@ -1,20 +1,36 @@
 import json
 import math
 from aima3.search import Problem, Node, SimpleProblemSolvingAgentProgram
-
+from aima3.utils import is_in
 
 
 class ClosestRestaurant(Problem):
-    def __init__(self):
-        pass
+
+    def __init__(self, list_of_restaurants, initial="Italian", goal="Mexican"):
+        super().__init__(initial, goal)
+        self.list_of_restaurants = list_of_restaurants
 
     def actions(self, state):
+
         """Return actions in the current restaurant to:
         - scan the nearby area
-        - travel to another restaurant """
-        raise NotImplementedError
+        - travel to another restaurant
 
-    def scan(self, initial_lat, initial_long, list_of_restaurants):
+         The algorithm checks whether there are directions to travel to
+         if the area was scanned.
+
+         If there are instances upon scanning, the agent can travel as well.
+         """
+
+        available_directions = self.scan
+        available_actions = ["scan"]
+
+        if available_directions is not None:
+            available_actions.append("travel")
+
+        return available_actions
+
+    def scan(self, state):
         """Input parameter : initial coordinates of a place, a list of locations
             Return : a list of places that are located in the area scanned"""
 
@@ -30,25 +46,28 @@ class ClosestRestaurant(Problem):
     
         I altered variable names and added a FOR loop. 
         """
-        lat_initial = math.radians(initial_lat)
-        lon1_initial = math.radians(initial_long)
+        state.location[0] = math.radians(state.location[0])
+        state.location[1] = math.radians(state.location[1])
         R = 6373
-        for i in list_of_restaurants:
-            lat2 = math.radians(float(i.location[0]))
-            lon2 = math.radians(float(i.location[1]))
-            difference_lon = lon2 - lon1_initial
-            difference_lat = lat2 - lat_initial
+        for i in self.list_of_restaurants:
+            lat2 = math.radians(i.state.location[0])
+            lon2 = math.radians(i.state.location[1])
 
-            a = math.sin(difference_lat / 2) ** 2 + math.cos(lat_initial) * math.cos(lat2) * math.sin(difference_lon / 2) ** 2
+            difference_lat = lat2 - state.location[0]
+            difference_lon = lon2 - state.location[1]
+
+            a = math.sin(difference_lat / 2) ** 2 + math.cos(state.location[0]) * math.cos(lat2) * math.sin(
+                difference_lon / 2) ** 2
 
             c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+
             distance = round(R * c , 2)
 
         # End of code extract.
 
-            if distance <= 5: # if the distance from initial location is <= 5 km to the current restaurant
-                restaurant_list_within_area.append(i) #add that restaurant to a list
-                print(i.name)
+            if distance <= 5:  # if the distance from initial location is <= 5 km to the current restaurant
+                restaurant_list_within_area.append(i)  # add that restaurant to a list
+                print(i.state.name)
                 print("Distance " + str(distance) + " km")
 
         return restaurant_list_within_area
@@ -65,28 +84,40 @@ class ClosestRestaurant(Problem):
         if action == "travel":
             return
         elif action == "scan":
-            return
-
-        return available_actions
+            return self.scan(state)
 
     def value(self, state):
         pass
+
+    def goal_test(self, state):
+
+        if isinstance(self.goal, list):
+            return is_in(state.cuisines, self.goal)
+        else:
+            return state.cuisines == self.goal
 
 
 class RestaurantNode(Node):
     """Data types:
         - Location is a list containing latitude and longitude"""
 
-    def __init__(self, state, name, id, location, parent=None, action=None, path_cost=0):
-        super(RestaurantNode, self).__init__(state, parent, action, path_cost)
+    def __init__(self, cuisines, name, ID, location, parent=None, action=None, path_cost=0):
+        state = State(name, ID, cuisines, location)
+        super().__init__(state, parent, action, path_cost)
+
+
+class State:
+
+    def __init__(self, name, ID, cuisines, location):
         self.name = name
-        self.id = id
+        self.ID = ID
+        self.cuisines = cuisines
         self.location = location
 
-    def print(self):
+    def print_state(self):
         print("Name: " + self.name)
-        print("States: " + self.state)
-        print("ID: " + str(self.id))
+        print("Cuisines: " + self.cuisines)
+        print("ID: " + str(self.ID))
         print("Location: " + self.location[0] + ", " + self.location[1])
         print()
 
@@ -114,15 +145,10 @@ class Solution:
                 restaurant_list.append(RestaurantNode(i['restaurant']['cuisines'],
                                                       i['restaurant']['name'],
                                                       i['restaurant']['R']['res_id'],
-                                                      [i['restaurant']['location']['latitude'],
-                                                       i['restaurant']['location']['longitude']]
+                                                      [float(i['restaurant']['location']['latitude']),
+                                                       float(i['restaurant']['location']['longitude'])]
                                                       ))
             n += 1
-
-        print(n)
-
-        for restaurant in restaurant_list:
-            restaurant.print()
 
         return restaurant_list
         # print(json.dumps(data, indent=4, sort_keys=False))
@@ -133,7 +159,5 @@ if __name__ == '__main__':
     filename = "dataset/file1.json"
     restaurant_list = solution.parseJSON(filename)
 
-    action1 = ClosestRestaurant()
-    """ Initial location: 28.554281, 77.19447 which is almost the same as for the first restaurant in the list  """
-    action1.scan(28.5542851, 77.19447, restaurant_list)
-
+    problem = ClosestRestaurant(restaurant_list)
+    problem.scan(restaurant_list[0].state)
