@@ -1,12 +1,12 @@
 import json
 import math
-from aima3.search import Problem, Node, SimpleProblemSolvingAgentProgram
+from aima3.search import Problem, Node, SimpleProblemSolvingAgentProgram, depth_limited_search
 from aima3.utils import is_in
 
 
 class ClosestRestaurant(Problem):
 
-    def __init__(self, list_of_restaurants, initial="Italian", goal="Mexican"):
+    def __init__(self, list_of_restaurants, initial=None, goal=None):
         super().__init__(initial, goal)
         self.list_of_restaurants = list_of_restaurants
         if list_of_restaurants is not None:
@@ -98,10 +98,12 @@ class ClosestRestaurant(Problem):
         pass
 
     def goal_test(self, state):
-        if isinstance(self.goal, list):
-            return is_in(state.cuisines, self.goal)
+        if isinstance(state.cuisines, str):
+            return self.goal == state.cuisines
+        elif self.goal in state.cuisines:
+            return True
         else:
-            return state.cuisines == self.goal
+            return False
 
 
 class RestaurantNode(Node):
@@ -166,5 +168,7 @@ if __name__ == '__main__':
     filename = "dataset/file1.json"
     restaurant_list = solution.parseJSON(filename)
 
-    problem = ClosestRestaurant(restaurant_list)
-    problem.scan(restaurant_list[0].state)
+    problem = ClosestRestaurant(restaurant_list,restaurant_list[0].state,restaurant_list[54].state)
+    #problem.scan(restaurant_list[0].state)
+
+    depth_limited_search(problem,1)
