@@ -50,26 +50,26 @@ class ClosestRestaurant(Problem):
     
         I altered variable names and added a FOR loop. 
         """
-        state.location[0] = math.radians(state.location[0])
-        state.location[1] = math.radians(state.location[1])
+        initial_lan = math.radians(state.location[0])
+        initial_lon = math.radians(state.location[1])
         R = 6373
         for i in self.list_of_restaurants:
             lat2 = math.radians(i.state.location[0])
             lon2 = math.radians(i.state.location[1])
 
-            difference_lat = lat2 - state.location[0]
-            difference_lon = lon2 - state.location[1]
+            difference_lat = lat2 - initial_lan
+            difference_lon = lon2 - initial_lon
 
-            a = math.sin(difference_lat / 2) ** 2 + math.cos(state.location[0]) * math.cos(lat2) * math.sin(
+            a = math.sin(difference_lat / 2) ** 2 + math.cos(initial_lan) * math.cos(lat2) * math.sin(
                 difference_lon / 2) ** 2
 
             c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
-            distance = round(R * c, 2)
+            distance = round(R * c , 2)
 
-            # End of code extract.
+        # End of code extract.
 
-            if distance <= 5:  # if the distance from initial location is <= 5 km to the current restaurant
+            if distance <= 10:  # if the distance from initial location is <= 5 km to the current restaurant
                 restaurant_list_within_area.append(i)  # add that restaurant to a list
                 print(i.state.name)
                 print("Distance " + str(distance) + " km")
@@ -102,6 +102,22 @@ class ClosestRestaurant(Problem):
             return True
         else:
            return self.goal.cuisines == state.cuisines
+
+    def path_cost(self, c, current_state, action, next_state):
+        distance_between_states = 0
+        if action == "travel":
+            lat_initial = math.radians(current_state.location[0])
+            lon_initial = math.radians(current_state.location[1])
+            R = 6373
+            lat_next = math.radians(next_state.location[0])
+            lon_next = math.radians(next_state.location[1])
+            difference_lon = lon_next - lon_initial
+            difference_lat = lat_next - lat_initial
+            a = math.sin(difference_lat / 2) ** 2 + math.cos(lat_initial) * math.cos(lat_next) * math.sin(
+                difference_lon / 2) ** 2
+            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+            distance_between_states = round(R * c, 2)
+        return distance_between_states
 
 
 class RestaurantNode(Node):
