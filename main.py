@@ -1,7 +1,7 @@
 import json
 import math
-from aima3.search import Problem, Node, SimpleProblemSolvingAgentProgram, depth_limited_search
-from aima3.utils import is_in
+from aima3.search import Problem, Node, SimpleProblemSolvingAgentProgram, depth_limited_search, uniform_cost_search
+from aima3.utils import memoize, PriorityQueue
 
 
 class ClosestRestaurant(Problem):
@@ -98,12 +98,10 @@ class ClosestRestaurant(Problem):
         pass
 
     def goal_test(self, state):
-        if isinstance(state.cuisines, str):
-            return self.goal == state.cuisines
-        elif self.goal in state.cuisines:
+        if self.goal.cuisines in state.cuisines:
             return True
         else:
-            return False
+           return self.goal.cuisines == state.cuisines
 
 
 class RestaurantNode(Node):
@@ -162,6 +160,60 @@ class Solution:
         return restaurant_list
         # print(json.dumps(data, indent=4, sort_keys=False))
 
+    def depth_limited_search(self, problem, limit=50):
+        """[Figure 3.17]"""
+
+        def recursive_dls(node, problem, limit):
+            if problem.goal_test(node.state):
+                return node
+            elif limit == 0:
+                return 'cutoff'
+            else:
+                cutoff_occurred = False
+                for child in node.expand(problem):
+                    result = recursive_dls(child, problem, limit - 1)
+                    if result == 'cutoff':
+                        cutoff_occurred = True
+                    elif result is not None:
+                        return result
+                return 'cutoff' if cutoff_occurred else None
+
+        # Body of depth_limited_search:
+        return recursive_dls(RestaurantNode(problem.initial), problem, limit)
+
+    def best_first_graph_search(self,problem, f, display=False):
+        """Search the nodes with the lowest f scores first.
+        You specify the function f(node) that you want to minimize; for example,
+        if f is a heuristic estimate to the goal, then we have greedy best
+        first search; if f is node.depth then we have breadth-first search.
+        There is a subtlety: the line "f = memoize(f, 'f')" means that the f
+        values will be cached on the nodes as they are computed. So after doing
+        a best first search you can examine the f values of the path returned."""
+        f = memoize(f, 'f')
+        node = Node(problem.initial)
+        frontier = PriorityQueue('min', f)
+        frontier.append(node)
+        explored = set()
+        while frontier:
+            node = frontier.pop()
+            if problem.goal_test(node.state):
+                if display:
+                    print(len(explored), "paths have been expanded and", len(frontier), "paths remain in the frontier")
+                return node
+            explored.add(node.state)
+            for child in node.expand(problem):
+                if child.state not in explored and child not in frontier:
+                    frontier.append(child)
+                elif child in frontier:
+                    if f(child) < frontier[child]:
+                        del frontier[child]
+                        frontier.append(child)
+        return None
+
+    def uniform_cost_search(self,problem):
+            """[Figure 3.14]"""
+            return self.best_first_graph_search(problem, lambda node: node.path_cost)
+
 
 if __name__ == '__main__':
     solution = Solution()
@@ -171,4 +223,6 @@ if __name__ == '__main__':
     problem = ClosestRestaurant(restaurant_list,restaurant_list[0].state,restaurant_list[54].state)
     #problem.scan(restaurant_list[0].state)
 
-    depth_limited_search(problem,1)
+
+    #solution.depth_limited_search(problem,1)
+    solution.uniform_cost_search(problem)
