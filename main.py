@@ -27,12 +27,12 @@ class ClosestRestaurant(Problem):
          """
 
         available_directions = self.scan
-        available_actions = ["scan"]
+        """available_actions = ["scan"]
 
         if available_directions is not None:
-            available_actions.append("travel")
+            available_actions.append("travel")"""
 
-        return available_actions
+        return available_directions
 
     def scan(self, state):
         """Input parameter : state where the action was initiated
