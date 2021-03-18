@@ -26,13 +26,16 @@ class ClosestRestaurant(Problem):
          If there are instances upon scanning, the agent can travel as well.
          """
 
-        available_directions = self.scan
+        available_directions = self.scan(state)
         """available_actions = ["scan"]
 
         if available_directions is not None:
             available_actions.append("travel")"""
 
         return available_directions
+
+    def __lt__(self, node):
+        return self.state < node.state
 
     def scan(self, state):
         """Input parameter : state where the action was initiated
@@ -70,9 +73,9 @@ class ClosestRestaurant(Problem):
             # End of code extract.
 
             if distance <= 10:  # if the distance from initial location is <= 5 km to the current restaurant
-                restaurant_list_within_area.append(i)  # add that restaurant to a list
-                print(i.state.name)
-                print("Distance " + str(distance) + " km")
+                restaurant_list_within_area.append(i.state)  # add that restaurant to a list
+                # print(i.state.name)
+                # print("Distance " + str(distance) + " km")
 
         return restaurant_list_within_area
 
@@ -89,19 +92,19 @@ class ClosestRestaurant(Problem):
         After scanning: return locations available to travel to
         After travelling: return new coordinates for the agent
         """
-        if action == "travel":
-            return self.travel(state)
-        elif action == "scan":
-            return self.scan(state)
+        if action is not None:
+            return action
+        else:
+            return state
 
     def value(self, state):
         pass
 
     def goal_test(self, state):
-        if self.goal.cuisines in state.cuisines:
+        if self.goal in state.cuisines:
             return True
         else:
-            return self.goal.cuisines == state.cuisines
+            return False
 
     def path_cost(self, c, current_state, action, next_state):
         distance_between_states = 0
@@ -176,26 +179,6 @@ class Solution:
         return restaurant_list
         # print(json.dumps(data, indent=4, sort_keys=False))
 
-    def depth_limited_search(self, problem, limit=50):
-        """[Figure 3.17]"""
-
-        def recursive_dls(node, problem, limit):
-            if problem.goal_test(node.state):
-                return node
-            elif limit == 0:
-                return 'cutoff'
-            else:
-                cutoff_occurred = False
-                for child in node.expand(problem):
-                    result = recursive_dls(child, problem, limit - 1)
-                    if result == 'cutoff':
-                        cutoff_occurred = True
-                    elif result is not None:
-                        return result
-                return 'cutoff' if cutoff_occurred else None
-
-        # Body of depth_limited_search:
-        return recursive_dls(RestaurantNode(problem.initial), problem, limit)
 
     def best_first_graph_search(self, problem, f, display=False):
         """Search the nodes with the lowest f scores first.
@@ -236,8 +219,11 @@ if __name__ == '__main__':
     filename = "dataset/file1.json"
     restaurant_list = solution.parseJSON(filename)
 
-    problem = ClosestRestaurant(restaurant_list, restaurant_list[0].state, restaurant_list[54].state)
+    problem = ClosestRestaurant(restaurant_list, restaurant_list[0].state, "Mexican")
     # problem.scan(restaurant_list[0].state)
 
-    solution.depth_limited_search(problem, 1)
-    # solution.uniform_cost_search(problem)
+    answer = depth_limited_search(problem, 1)
+    print(answer.state.print_state(), print(answer.path_cost))
+
+    #answer = solution.uniform_cost_search(problem)
+    #print(answer.state.print_state(), print(answer.path_cost))
