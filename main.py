@@ -96,9 +96,8 @@ class ClosestRestaurant(Problem):
         else:
             return state.cuisines == self.goal
 
-    def path_cost_func(self, c, action, current_state, next_state):
-
-        distance= 0
+    def path_cost(self, c, current_state, action, next_state):
+        distance_between_states = 0
         if action == "travel":
             lat_initial = math.radians(current_state.location[0])
             lon_initial = math.radians(current_state.location[1])
@@ -107,13 +106,12 @@ class ClosestRestaurant(Problem):
             lon_next = math.radians(next_state.location[1])
             difference_lon = lon_next - lon_initial
             difference_lat = lat_next - lat_initial
-
             a = math.sin(difference_lat / 2) ** 2 + math.cos(lat_initial) * math.cos(lat_next) * math.sin(
-                    difference_lon / 2) ** 2
-
+                difference_lon / 2) ** 2
             c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-            distance = round(R * c, 2)
-            return distance
+            distance_between_states = round(R * c, 2)
+        return distance_between_states
+
 
 class RestaurantNode(Node):
     """Data types:
@@ -181,6 +179,6 @@ if __name__ == '__main__':
     restaurant_list_in_area = problem.scan(restaurant_list[0].state)
 
     for i in restaurant_list_in_area:
-        distance= problem.path_cost_func(0,"travel", restaurant_list[0].state, i.state )
+        distance= problem.path_cost(0, restaurant_list[0].state, "travel", i.state)
         print("Path Cost: " + str(distance) + " km")
 
