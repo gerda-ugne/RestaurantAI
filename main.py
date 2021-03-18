@@ -65,9 +65,9 @@ class ClosestRestaurant(Problem):
 
             c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
 
-            distance = round(R * c , 2)
+            distance = round(R * c, 2)
 
-        # End of code extract.
+            # End of code extract.
 
             if distance <= 10:  # if the distance from initial location is <= 5 km to the current restaurant
                 restaurant_list_within_area.append(i)  # add that restaurant to a list
@@ -77,9 +77,9 @@ class ClosestRestaurant(Problem):
         return restaurant_list_within_area
 
     """Returns the updated agent's state after travel"""
+
     def travel(self, state):
-        self.agent_location = state.location
-        return self.agent_location
+        return state
 
     def result(self, state, action):
         """Return the state that results from executing the given
@@ -101,7 +101,7 @@ class ClosestRestaurant(Problem):
         if self.goal.cuisines in state.cuisines:
             return True
         else:
-           return self.goal.cuisines == state.cuisines
+            return self.goal.cuisines == state.cuisines
 
     def path_cost(self, c, current_state, action, next_state):
         distance_between_states = 0
@@ -124,24 +124,23 @@ class RestaurantNode(Node):
     """Data types:
         - Location is a list containing latitude and longitude"""
 
-    def __init__(self, cuisines, name, ID, location, parent=None, action=None, path_cost=0):
-        state = State(name, ID, cuisines, location)
+    def __init__(self, state, parent=None, action=None, path_cost=0):
         super().__init__(state, parent, action, path_cost)
 
 
 class State:
 
-    def __init__(self, name, ID, cuisines, location):
+    def __init__(self, cuisines, name, ID, location):
+        self.cuisines = cuisines
         self.name = name
         self.ID = ID
-        self.cuisines = cuisines
         self.location = location
 
     def print_state(self):
         print("Name: " + self.name)
         print("Cuisines: " + self.cuisines)
         print("ID: " + str(self.ID))
-        print("Location: " + self.location[0] + ", " + self.location[1])
+        print("Location: " + str(self.location[0]) + ", " + str(self.location[1]))
         print()
 
 
@@ -165,12 +164,13 @@ class Solution:
 
             if 'restaurants' not in data[n]: break
             for i in data[n]['restaurants']:
-                restaurant_list.append(RestaurantNode(i['restaurant']['cuisines'],
-                                                      i['restaurant']['name'],
-                                                      i['restaurant']['R']['res_id'],
-                                                      [float(i['restaurant']['location']['latitude']),
-                                                       float(i['restaurant']['location']['longitude'])]
-                                                      ))
+                state = (State(i['restaurant']['cuisines'],
+                               i['restaurant']['name'],
+                               i['restaurant']['R']['res_id'],
+                               [float(i['restaurant']['location']['latitude']),
+                                float(i['restaurant']['location']['longitude'])]
+                               ))
+                restaurant_list.append(RestaurantNode(state))
             n += 1
 
         return restaurant_list
@@ -197,7 +197,7 @@ class Solution:
         # Body of depth_limited_search:
         return recursive_dls(RestaurantNode(problem.initial), problem, limit)
 
-    def best_first_graph_search(self,problem, f, display=False):
+    def best_first_graph_search(self, problem, f, display=False):
         """Search the nodes with the lowest f scores first.
         You specify the function f(node) that you want to minimize; for example,
         if f is a heuristic estimate to the goal, then we have greedy best
@@ -226,9 +226,9 @@ class Solution:
                         frontier.append(child)
         return None
 
-    def uniform_cost_search(self,problem):
-            """[Figure 3.14]"""
-            return self.best_first_graph_search(problem, lambda node: node.path_cost)
+    def uniform_cost_search(self, problem):
+        """[Figure 3.14]"""
+        return self.best_first_graph_search(problem, lambda node: node.path_cost)
 
 
 if __name__ == '__main__':
@@ -236,9 +236,8 @@ if __name__ == '__main__':
     filename = "dataset/file1.json"
     restaurant_list = solution.parseJSON(filename)
 
-    problem = ClosestRestaurant(restaurant_list,restaurant_list[0].state,restaurant_list[54].state)
-    #problem.scan(restaurant_list[0].state)
+    problem = ClosestRestaurant(restaurant_list, restaurant_list[0].state, restaurant_list[54].state)
+    # problem.scan(restaurant_list[0].state)
 
-
-    #solution.depth_limited_search(problem,1)
-    solution.uniform_cost_search(problem)
+    solution.depth_limited_search(problem, 1)
+    # solution.uniform_cost_search(problem)
