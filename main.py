@@ -34,9 +34,6 @@ class ClosestRestaurant(Problem):
 
         return available_directions
 
-    def __lt__(self, node):
-        return self.state < node.state
-
     def scan(self, state):
         """Input parameter : state where the action was initiated
             Return : a list of places that are located in the area scanned"""
@@ -88,9 +85,6 @@ class ClosestRestaurant(Problem):
         """Return the state that results from executing the given
         action in the given state. The action must be one of
         self.actions(state).
-
-        After scanning: return locations available to travel to
-        After travelling: return new coordinates for the agent
         """
         if action is not None:
             return action
@@ -130,6 +124,9 @@ class RestaurantNode(Node):
     def __init__(self, state, parent=None, action=None, path_cost=0):
         super().__init__(state, parent, action, path_cost)
 
+    def __lt__(self, node):
+        return self.path_cost < node.path_cost
+
 
 class State:
 
@@ -146,6 +143,8 @@ class State:
         print("Location: " + str(self.location[0]) + ", " + str(self.location[1]))
         print()
 
+    def __lt__(self, state):
+        return self.ID < state.ID
 
 class Solution:
 
@@ -178,7 +177,6 @@ class Solution:
 
         return restaurant_list
         # print(json.dumps(data, indent=4, sort_keys=False))
-
 
     def best_first_graph_search(self, problem, f, display=False):
         """Search the nodes with the lowest f scores first.
@@ -219,11 +217,11 @@ if __name__ == '__main__':
     filename = "dataset/file1.json"
     restaurant_list = solution.parseJSON(filename)
 
-    problem = ClosestRestaurant(restaurant_list, restaurant_list[0].state, "Mexican")
+    problem = ClosestRestaurant(restaurant_list, restaurant_list[0].state, "Thai")
     # problem.scan(restaurant_list[0].state)
 
-    answer = depth_limited_search(problem, 1)
-    print(answer.state.print_state(), print(answer.path_cost))
-
-    #answer = solution.uniform_cost_search(problem)
+    #answer = depth_limited_search(problem)
     #print(answer.state.print_state(), print(answer.path_cost))
+
+    answer = solution.uniform_cost_search(problem)
+    # print(answer.state.print_state(), print(answer.path_cost))
