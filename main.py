@@ -1,6 +1,7 @@
 import json
 import math
-from aima3.search import Problem, Node, SimpleProblemSolvingAgentProgram, depth_limited_search, uniform_cost_search
+from aima3.search import Problem, Node, SimpleProblemSolvingAgentProgram, depth_limited_search, uniform_cost_search, \
+    astar_search, greedy_best_first_graph_search
 from aima3.utils import memoize, PriorityQueue
 
 
@@ -9,10 +10,6 @@ class ClosestRestaurant(Problem):
     def __init__(self, list_of_restaurants, initial=None, goal=None):
         super().__init__(initial, goal)
         self.list_of_restaurants = list_of_restaurants
-        if list_of_restaurants is not None:
-            self.agent_location = list_of_restaurants[0].state.location
-        else:
-            self.agent_location = None
 
     def actions(self, state):
 
@@ -102,18 +99,18 @@ class ClosestRestaurant(Problem):
 
     def path_cost(self, c, current_state, action, next_state):
         distance_between_states = 0
-        if action == "travel":
-            lat_initial = math.radians(current_state.location[0])
-            lon_initial = math.radians(current_state.location[1])
-            R = 6373
-            lat_next = math.radians(next_state.location[0])
-            lon_next = math.radians(next_state.location[1])
-            difference_lon = lon_next - lon_initial
-            difference_lat = lat_next - lat_initial
-            a = math.sin(difference_lat / 2) ** 2 + math.cos(lat_initial) * math.cos(lat_next) * math.sin(
-                difference_lon / 2) ** 2
-            c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
-            distance_between_states = round(R * c, 2)
+        lat_initial = math.radians(current_state.location[0])
+        lon_initial = math.radians(current_state.location[1])
+        R = 6373
+        lat_next = math.radians(next_state.location[0])
+        lon_next = math.radians(next_state.location[1])
+        difference_lon = lon_next - lon_initial
+        difference_lat = lat_next - lat_initial
+        a = math.sin(difference_lat / 2) ** 2 + math.cos(lat_initial) * math.cos(lat_next) * math.sin(
+        difference_lon / 2) ** 2
+        c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+        distance_between_states = round(R * c, 2)
+
         return distance_between_states
 
 
@@ -141,7 +138,7 @@ class State:
         print("Cuisines: " + self.cuisines)
         print("ID: " + str(self.ID))
         print("Location: " + str(self.location[0]) + ", " + str(self.location[1]))
-        print()
+        print("\n")
 
     def __lt__(self, state):
         return self.ID < state.ID
@@ -178,50 +175,24 @@ class Solution:
         return restaurant_list
         # print(json.dumps(data, indent=4, sort_keys=False))
 
-    def best_first_graph_search(self, problem, f, display=False):
-        """Search the nodes with the lowest f scores first.
-        You specify the function f(node) that you want to minimize; for example,
-        if f is a heuristic estimate to the goal, then we have greedy best
-        first search; if f is node.depth then we have breadth-first search.
-        There is a subtlety: the line "f = memoize(f, 'f')" means that the f
-        values will be cached on the nodes as they are computed. So after doing
-        a best first search you can examine the f values of the path returned."""
-        f = memoize(f, 'f')
-        node = Node(problem.initial)
-        frontier = PriorityQueue('min', f)
-        frontier.append(node)
-        explored = set()
-        while frontier:
-            node = frontier.pop()
-            if problem.goal_test(node.state):
-                if display:
-                    print(len(explored), "paths have been expanded and", len(frontier), "paths remain in the frontier")
-                return node
-            explored.add(node.state)
-            for child in node.expand(problem):
-                if child.state not in explored and child not in frontier:
-                    frontier.append(child)
-                elif child in frontier:
-                    if f(child) < frontier[child]:
-                        del frontier[child]
-                        frontier.append(child)
-        return None
-
-    def uniform_cost_search(self, problem):
-        """[Figure 3.14]"""
-        return self.best_first_graph_search(problem, lambda node: node.path_cost)
-
 
 if __name__ == '__main__':
     solution = Solution()
     filename = "dataset/file1.json"
     restaurant_list = solution.parseJSON(filename)
 
-    problem = ClosestRestaurant(restaurant_list, restaurant_list[0].state, "Thai")
+    problem = ClosestRestaurant(restaurant_list, restaurant_list[0].state, "Chinese")
     # problem.scan(restaurant_list[0].state)
 
-    #answer = depth_limited_search(problem)
+    answer = depth_limited_search(problem)
+    answer.state.print_state()
+    print("Distance: " + str(answer.path_cost) + " kms.\n")
+
+    answer = uniform_cost_search(problem)
+    answer.state.print_state()
+    print("Distance: " + str(answer.path_cost) + " kms.\n")
+
+    #answer = greedy_best_first_graph_search(problem)
     #print(answer.state.print_state(), print(answer.path_cost))
 
-    answer = solution.uniform_cost_search(problem)
-    # print(answer.state.print_state(), print(answer.path_cost))
+    #answer = astar_search(problem)
