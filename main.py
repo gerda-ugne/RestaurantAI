@@ -5,11 +5,14 @@ from aima3.search import Problem, Node, SimpleProblemSolvingAgentProgram, depth_
 from aima3.utils import memoize, PriorityQueue
 
 
-class ClosestRestaurant(Problem):
 
+class ClosestRestaurant(Problem):
+    # heuristic
+    global goal_node
     def __init__(self, list_of_restaurants, initial=None, goal=None):
         super().__init__(initial, goal)
         self.list_of_restaurants = list_of_restaurants
+        global goal_node
 
     def actions(self, state):
 
@@ -113,6 +116,37 @@ class ClosestRestaurant(Problem):
 
         return distance_between_states
 
+    def pre_h(self, cuisine, initial_node):
+        """ Finding a goal node
+        :param: cuisine: a goal cuisine as a string
+        :param: initial node: an initial node's location
+        :return: a goal node
+        """
+
+        goal_list = [] # a list of all nodes containing goal cuisine
+        for x in self.list_of_restaurants:
+            if cuisine in x.state.cuisines:
+                goal_list.append(x)  # creates a list of restaurants containing the goal cuisine
+
+        distance_from_potential_goal = []  # a list of distances from initial location to goal location
+        for x in goal_list:
+            i = self.path_cost(0, initial_node.state, "travel", x.state)
+            distance_from_potential_goal.append(i)
+
+        #finding the shortest distance
+        index_of_smallest_value = distance_from_potential_goal.index(min(distance_from_potential_goal))
+        #print(goal_list[index_of_smallest_value].state.name)
+        return goal_list[index_of_smallest_value] #returning a  node that has a shortest distance
+
+    def h(self, node):
+        """
+        Heuristic function
+        :param node: current node
+        :return: a float value
+        """
+        #Using Euclidean distance
+        h_value = math.sqrt((node.state.location[0] - goal_node.state.location[0]) ** 2 + ( node.state.location[1] - goal_node.state.location[1]) ** 2)
+        return round(h_value, 2)
 
 class RestaurantNode(Node):
     """Data types:
@@ -191,6 +225,11 @@ if __name__ == '__main__':
     answer = uniform_cost_search(problem)
     answer.state.print_state()
     print("Distance: " + str(answer.path_cost) + " kms.\n")
+
+    goal_node = problem.pre_h("Chinese", restaurant_list[0]) #updating a global variable - goal node
+    #print("H value")
+    #print(problem.h(restaurant_list[23]))
+    #print(problem.h(restaurant_list[1]))
 
     #answer = greedy_best_first_graph_search(problem)
     #print(answer.state.print_state(), print(answer.path_cost))
