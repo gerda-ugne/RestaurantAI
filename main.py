@@ -1,15 +1,17 @@
 import json
 import math
-from aima3.search import Problem, Node, SimpleProblemSolvingAgentProgram, depth_limited_search, uniform_cost_search, \
-    astar_search, greedy_best_first_graph_search
-from aima3.utils import memoize, PriorityQueue
+#from aima3.search import Problem, Node, depth_limited_search, uniform_cost_search, Thing,
+    #astar_search, greedy_best_first_graph_search
+from aima3.search import *
 
 
 class ClosestRestaurant(Problem):
-
+    # heuristic
+    global goal_node
     def __init__(self, list_of_restaurants, initial=None, goal=None):
         super().__init__(initial, goal)
         self.list_of_restaurants = list_of_restaurants
+        global goal_node
 
     def actions(self, state):
 
@@ -66,7 +68,7 @@ class ClosestRestaurant(Problem):
 
             # End of code extract.
 
-            if distance <= 10:  # if the distance from initial location is <= 5 km to the current restaurant
+            if distance <= 150:  # if the distance from initial location is <= 5 km to the current restaurant
                 restaurant_list_within_area.append(i.state)  # add that restaurant to a list
                 # print(i.state.name)
                 # print("Distance " + str(distance) + " km")
@@ -113,6 +115,37 @@ class ClosestRestaurant(Problem):
 
         return distance_between_states
 
+    def pre_h(self, cuisine, initial_node):
+        """ Finding a goal node
+        :param: cuisine: a goal cuisine as a string
+        :param: initial node: an initial node's location
+        :return: a goal node
+        """
+
+        goal_list = [] # a list of all nodes containing goal cuisine
+        for x in self.list_of_restaurants:
+            if cuisine in x.state.cuisines:
+                goal_list.append(x)  # creates a list of restaurants containing the goal cuisine
+
+        distance_from_potential_goal = []  # a list of distances from initial location to goal location
+        for x in goal_list:
+            i = self.path_cost(0, initial_node.state, "travel", x.state)
+            distance_from_potential_goal.append(i)
+
+        #finding the shortest distance
+        index_of_smallest_value = distance_from_potential_goal.index(min(distance_from_potential_goal))
+        #print(goal_list[index_of_smallest_value].state.name)
+        return goal_list[index_of_smallest_value] #returning a  node that has a shortest distance
+
+    def h(self, node):
+        """
+        Heuristic function
+        :param node: current node
+        :return: a float value
+        """
+        #Using Euclidean distance
+        h_value = math.sqrt((node.state.location[0] - goal_node.state.location[0]) ** 2 + ( node.state.location[1] - goal_node.state.location[1]) ** 2)
+        return round(h_value, 2)
 
 class RestaurantNode(Node):
     """Data types:
@@ -175,24 +208,41 @@ class Solution:
         return restaurant_list
         # print(json.dumps(data, indent=4, sort_keys=False))
 
+    @staticmethod
+    def print_answer(answer):
+        if answer == "cutoff":
+            print("No solution found in the range.")
+        elif answer is not None:
+            answer.state.print_state()
+            print("Distance: " + str(answer.path_cost) + " kms.\n")
+        else: print("No solution found.")
+
 
 if __name__ == '__main__':
     solution = Solution()
     filename = "dataset/file1.json"
     restaurant_list = solution.parseJSON(filename)
 
-    problem = ClosestRestaurant(restaurant_list, restaurant_list[0].state, "Chinese")
-    # problem.scan(restaurant_list[0].state)
+    goal_cuisine = "Mughlai"
+    problem = ClosestRestaurant(restaurant_list, restaurant_list[0].state, goal_cuisine)
 
-    answer = depth_limited_search(problem)
-    answer.state.print_state()
-    print("Distance: " + str(answer.path_cost) + " kms.\n")
+    print("DEPTH LIMITED SEARCH:")
+    answer = depth_limited_search(problem, 3)
+    solution.print_answer(answer)
 
+    print("UNIFORM COST SEARCH:")
     answer = uniform_cost_search(problem)
-    answer.state.print_state()
-    print("Distance: " + str(answer.path_cost) + " kms.\n")
+    solution.print_answer(answer)
 
-    #answer = greedy_best_first_graph_search(problem)
-    #print(answer.state.print_state(), print(answer.path_cost))
+    goal_node = problem.pre_h(goal_cuisine, restaurant_list[0]) #updating a global variable - goal node
+    #print("H value")
+    #print(problem.h(restaurant_list[23]))
+    #print(problem.h(restaurant_list[1]))
 
-    #answer = astar_search(problem)
+    print("GREEDY SEARCH:")
+    answer = greedy_best_first_graph_search(problem, problem.h)
+    solution.print_answer(answer)
+
+    print("A STAR SEARCH:")
+    answer = astar_search(problem, problem.h)
+    solution.print_answer(answer)
