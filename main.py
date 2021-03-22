@@ -1,9 +1,8 @@
 import json
 import math
-from aima3.search import Problem, Node, SimpleProblemSolvingAgentProgram, depth_limited_search, uniform_cost_search, \
-    astar_search, greedy_best_first_graph_search
-from aima3.utils import memoize, PriorityQueue
-
+#from aima3.search import Problem, Node, depth_limited_search, uniform_cost_search, Thing,
+    #astar_search, greedy_best_first_graph_search
+from aima3.search import *
 
 
 class ClosestRestaurant(Problem):
@@ -69,7 +68,7 @@ class ClosestRestaurant(Problem):
 
             # End of code extract.
 
-            if distance <= 10:  # if the distance from initial location is <= 5 km to the current restaurant
+            if distance <= 150:  # if the distance from initial location is <= 5 km to the current restaurant
                 restaurant_list_within_area.append(i.state)  # add that restaurant to a list
                 # print(i.state.name)
                 # print("Distance " + str(distance) + " km")
@@ -209,29 +208,41 @@ class Solution:
         return restaurant_list
         # print(json.dumps(data, indent=4, sort_keys=False))
 
+    @staticmethod
+    def print_answer(answer):
+        if answer == "cutoff":
+            print("No solution found in the range.")
+        elif answer is not None:
+            answer.state.print_state()
+            print("Distance: " + str(answer.path_cost) + " kms.\n")
+        else: print("No solution found.")
+
 
 if __name__ == '__main__':
     solution = Solution()
     filename = "dataset/file1.json"
     restaurant_list = solution.parseJSON(filename)
 
-    problem = ClosestRestaurant(restaurant_list, restaurant_list[0].state, "Chinese")
-    # problem.scan(restaurant_list[0].state)
+    goal_cuisine = "Mughlai"
+    problem = ClosestRestaurant(restaurant_list, restaurant_list[0].state, goal_cuisine)
 
-    answer = depth_limited_search(problem)
-    answer.state.print_state()
-    print("Distance: " + str(answer.path_cost) + " kms.\n")
+    print("DEPTH LIMITED SEARCH:")
+    answer = depth_limited_search(problem, 3)
+    solution.print_answer(answer)
 
+    print("UNIFORM COST SEARCH:")
     answer = uniform_cost_search(problem)
-    answer.state.print_state()
-    print("Distance: " + str(answer.path_cost) + " kms.\n")
+    solution.print_answer(answer)
 
-    goal_node = problem.pre_h("Chinese", restaurant_list[0]) #updating a global variable - goal node
+    goal_node = problem.pre_h(goal_cuisine, restaurant_list[0]) #updating a global variable - goal node
     #print("H value")
     #print(problem.h(restaurant_list[23]))
     #print(problem.h(restaurant_list[1]))
 
-    #answer = greedy_best_first_graph_search(problem)
-    #print(answer.state.print_state(), print(answer.path_cost))
+    print("GREEDY SEARCH:")
+    answer = greedy_best_first_graph_search(problem, problem.h)
+    solution.print_answer(answer)
 
-    #answer = astar_search(problem)
+    print("A STAR SEARCH:")
+    answer = astar_search(problem, problem.h)
+    solution.print_answer(answer)
