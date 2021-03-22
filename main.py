@@ -1,13 +1,15 @@
 import json
 import math
-#from aima3.search import Problem, Node, depth_limited_search, uniform_cost_search, Thing,
-    #astar_search, greedy_best_first_graph_search
+# from aima3.search import Problem, Node, depth_limited_search, uniform_cost_search, Thing,
+# astar_search, greedy_best_first_graph_search
+import folium as folium
 from aima3.search import *
 
 
 class ClosestRestaurant(Problem):
     # heuristic
     global goal_node
+
     def __init__(self, list_of_restaurants, initial=None, goal=None):
         super().__init__(initial, goal)
         self.list_of_restaurants = list_of_restaurants
@@ -109,7 +111,7 @@ class ClosestRestaurant(Problem):
         difference_lon = lon_next - lon_initial
         difference_lat = lat_next - lat_initial
         a = math.sin(difference_lat / 2) ** 2 + math.cos(lat_initial) * math.cos(lat_next) * math.sin(
-        difference_lon / 2) ** 2
+            difference_lon / 2) ** 2
         c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
         distance_between_states = round(R * c, 2)
 
@@ -122,7 +124,7 @@ class ClosestRestaurant(Problem):
         :return: a goal node
         """
 
-        goal_list = [] # a list of all nodes containing goal cuisine
+        goal_list = []  # a list of all nodes containing goal cuisine
         for x in self.list_of_restaurants:
             if cuisine in x.state.cuisines:
                 goal_list.append(x)  # creates a list of restaurants containing the goal cuisine
@@ -132,10 +134,10 @@ class ClosestRestaurant(Problem):
             i = self.path_cost(0, initial_node.state, "travel", x.state)
             distance_from_potential_goal.append(i)
 
-        #finding the shortest distance
+        # finding the shortest distance
         index_of_smallest_value = distance_from_potential_goal.index(min(distance_from_potential_goal))
-        #print(goal_list[index_of_smallest_value].state.name)
-        return goal_list[index_of_smallest_value] #returning a  node that has a shortest distance
+        # print(goal_list[index_of_smallest_value].state.name)
+        return goal_list[index_of_smallest_value]  # returning a  node that has a shortest distance
 
     def h(self, node):
         """
@@ -143,9 +145,11 @@ class ClosestRestaurant(Problem):
         :param node: current node
         :return: a float value
         """
-        #Using Euclidean distance
-        h_value = math.sqrt((node.state.location[0] - goal_node.state.location[0]) ** 2 + ( node.state.location[1] - goal_node.state.location[1]) ** 2)
+        # Using Euclidean distance
+        h_value = math.sqrt((node.state.location[0] - goal_node.state.location[0]) ** 2 + (
+                node.state.location[1] - goal_node.state.location[1]) ** 2)
         return round(h_value, 2)
+
 
 class RestaurantNode(Node):
     """Data types:
@@ -175,6 +179,7 @@ class State:
 
     def __lt__(self, state):
         return self.ID < state.ID
+
 
 class Solution:
 
@@ -215,7 +220,35 @@ class Solution:
         elif answer is not None:
             answer.state.print_state()
             print("Distance: " + str(answer.path_cost) + " kms.\n")
-        else: print("No solution found.")
+        else:
+            print("No solution found.")
+
+    @staticmethod
+    def plot_map(restaurant_list, goal_node):
+
+        points = []
+        for restaurant in restaurant_list:
+            points.append(tuple([restaurant.state.location[0], restaurant.state.location[1]]))
+
+        ave_lat = sum(p[0] for p in points) / len(points)
+        ave_lon = sum(p[1] for p in points) / len(points)
+
+        goal = tuple([goal_node.state.location[0], goal_node.state.location[1]])
+
+        # Load map centred on average coordinates
+        my_map = folium.Map(location=[ave_lat, ave_lon], zoom_start=3)
+
+        # add a markers
+        for each in points:
+            folium.Marker(each).add_to(my_map)
+
+        #folium.Marker(goal).add_to(my_map)
+
+        # fadd lines
+        # folium.PolyLine(points, color="red", weight=2.5, opacity=1).add_to(my_map)
+
+        # Save map
+        my_map.save("./map.html")
 
 
 if __name__ == '__main__':
@@ -234,10 +267,12 @@ if __name__ == '__main__':
     answer = uniform_cost_search(problem)
     solution.print_answer(answer)
 
-    goal_node = problem.pre_h(goal_cuisine, restaurant_list[0]) #updating a global variable - goal node
-    #print("H value")
-    #print(problem.h(restaurant_list[23]))
-    #print(problem.h(restaurant_list[1]))
+    goal_node = problem.pre_h(goal_cuisine, restaurant_list[0])  # updating a global variable - goal node
+
+    solution.plot_map(restaurant_list, goal_node)
+    # print("H value")
+    # print(problem.h(restaurant_list[23]))
+    # print(problem.h(restaurant_list[1]))
 
     print("GREEDY SEARCH:")
     answer = greedy_best_first_graph_search(problem, problem.h)
